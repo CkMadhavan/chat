@@ -7,12 +7,14 @@ import pickle
 import string
 import re
 from flask import Flask
-
+#hello
 from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+keras.backend.clear_session()
+    
 t = pickle.load(open('t' , "rb"))
 
 Xlen = 30#max([len(i) for i in q])
@@ -20,6 +22,68 @@ Ylen = 30#max([len(i) for i in a])
 
 Xvocab = 15000#len(t.word_index) + 1
 Yvocab = 15000#len(t.word_index) + 1
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+units = 100
+
+inp1 = keras.layers.Input(shape=(Xlen , ))
+enc1 = keras.layers.Embedding(Xvocab , 100 ,input_length = Xlen)(inp1)
+enc1 = keras.layers.LSTM(units , return_sequences = True)(enc1)
+enc1 = keras.layers.Dropout(0.5)(enc1)
+enc1 = keras.layers.BatchNormalization()(enc1)
+
+attention = keras.layers.Dense(1, activation='tanh')(enc1)
+attention = keras.layers.Flatten()(attention)
+attention = keras.layers.Activation('softmax')(attention)
+attention = keras.layers.RepeatVector(units)(attention)
+attention = keras.layers.Permute([2, 1])(attention)
+
+sent_representation = keras.layers.multiply([enc1, attention])
+sent_representation1 = keras.layers.Lambda(lambda xin: keras.backend.sum(xin, axis=-2), output_shape=(units,))(sent_representation)
+
+inp2 = keras.layers.Input(shape=(Ylen, ))
+enc2 = keras.layers.Embedding(Yvocab , 100, input_length = Ylen)(inp2)
+enc2 = keras.layers.LSTM(units , return_sequences = True)(enc2)
+enc2 = keras.layers.Dropout(0.5)(enc2)
+enc2 = keras.layers.BatchNormalization()(enc2)
+
+attention = keras.layers.Dense(1, activation='tanh')(enc2)
+attention = keras.layers.Flatten()(attention)
+attention = keras.layers.Activation('softmax')(attention)
+attention = keras.layers.RepeatVector(units)(attention)
+attention = keras.layers.Permute([2, 1])(attention)
+
+sent_representation = keras.layers.multiply([enc2, attention])
+sent_representation2 = keras.layers.Lambda(lambda xin: keras.backend.sum(xin, axis=-2), output_shape=(units,))(sent_representation)
+
+decoder = keras.layers.add([sent_representation1,sent_representation2])
+out = keras.layers.Dense(Yvocab , activation='softmax')(decoder)
+
+model = keras.models.Model(inputs = [inp1,inp2] , outputs = out)
+
+model.compile(optimizer = 'adam', loss = 'categorical_crossentropy')
+model.load_weights('di.hdf5')
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+def prediction(model , inp_que , inp = '' , totlen=Ylen):
+
+  que = pad_sequences(t.texts_to_sequences([inp_que]) , maxlen = Xlen , padding='pre' , truncating = 'pre')
+  if inp == '':
+    text = 'startseq'
+  else:
+    text = 'startseq ' + inp
+  for i in range(totlen):
+    ans = pad_sequences(t.texts_to_sequences([text]) , maxlen = Ylen , padding='pre' , truncating = 'pre')
+    y_pred = t.sequences_to_texts([[np.argmax(model.predict([que.reshape(1,Xlen) , ans.reshape(1,Ylen)]))]])[0]
+
+    text += ' ' + y_pred
+
+    if y_pred == 'endseq':
+      break
+
+  return text
 
 re_print = re.compile('[^%s]' % re.escape(string.printable))
 table = str.maketrans('' , '' , string.punctuation)
@@ -48,77 +112,9 @@ def clean(docs , l=True):
 def index(process):
     
     keras.backend.clear_session()
-
-    #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
-    units = 100
-
-    inp1 = keras.layers.Input(shape=(Xlen , ))
-    enc1 = keras.layers.Embedding(Xvocab , 100 ,input_length = Xlen)(inp1)
-    enc1 = keras.layers.LSTM(units , return_sequences = True)(enc1)
-    enc1 = keras.layers.Dropout(0.5)(enc1)
-    enc1 = keras.layers.BatchNormalization()(enc1)
-
-    attention = keras.layers.Dense(1, activation='tanh')(enc1)
-    attention = keras.layers.Flatten()(attention)
-    attention = keras.layers.Activation('softmax')(attention)
-    attention = keras.layers.RepeatVector(units)(attention)
-    attention = keras.layers.Permute([2, 1])(attention)
-
-    sent_representation = keras.layers.multiply([enc1, attention])
-    sent_representation1 = keras.layers.Lambda(lambda xin: keras.backend.sum(xin, axis=-2), output_shape=(units,))(sent_representation)
-
-    inp2 = keras.layers.Input(shape=(Ylen, ))
-    enc2 = keras.layers.Embedding(Yvocab , 100, input_length = Ylen)(inp2)
-    enc2 = keras.layers.LSTM(units , return_sequences = True)(enc2)
-    enc2 = keras.layers.Dropout(0.5)(enc2)
-    enc2 = keras.layers.BatchNormalization()(enc2)
-
-    attention = keras.layers.Dense(1, activation='tanh')(enc2)
-    attention = keras.layers.Flatten()(attention)
-    attention = keras.layers.Activation('softmax')(attention)
-    attention = keras.layers.RepeatVector(units)(attention)
-    attention = keras.layers.Permute([2, 1])(attention)
-
-    sent_representation = keras.layers.multiply([enc2, attention])
-    sent_representation2 = keras.layers.Lambda(lambda xin: keras.backend.sum(xin, axis=-2), output_shape=(units,))(sent_representation)
-
-    decoder = keras.layers.add([sent_representation1,sent_representation2])
-    out = keras.layers.Dense(Yvocab , activation='softmax')(decoder)
-
-    model = keras.models.Model(inputs = [inp1,inp2] , outputs = out)
-
-    model.compile(optimizer = 'adam', loss = 'categorical_crossentropy')
-    model.load_weights('di.hdf5')
-
-    #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-    
-    print('Hello Guys')
     process = clean([process])
     print(process)
-    
-    inp_que = process[0]
-    inp = ''
-    totlen=Ylen
-    
-    que = pad_sequences(t.texts_to_sequences([inp_que]) , maxlen = Xlen , padding='pre' , truncating = 'pre')
-    if inp == '':
-        text = 'startseq'
-    else:
-        text = 'startseq ' + inp
-    for i in range(totlen):
-        ans = pad_sequences(t.texts_to_sequences([text]) , maxlen = Ylen , padding='pre' , truncating = 'pre')
-        y_pred = t.sequences_to_texts([[np.argmax(model.predict([que.reshape(1,Xlen) , ans.reshape(1,Ylen)]))]])[0]
-
-        text += ' ' + y_pred
-
-        if y_pred == 'endseq':
-            break
-        
-        
-    print(text)
-    
-    return text
+    return prediction(model , process[0])[9:-7]
     keras.backend.clear_session()
 
 if __name__ == "__main__":
