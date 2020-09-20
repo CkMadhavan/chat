@@ -112,6 +112,7 @@ def clean(docs , l=True):
 def index(process):
     
     process = clean([process])
+    print(process)
     return prediction(model , process[0])[9:-7]
 
 if __name__ == "__main__":
