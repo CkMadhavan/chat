@@ -21,24 +21,6 @@ Ylen = 30#max([len(i) for i in a])
 Xvocab = 15000#len(t.word_index) + 1
 Yvocab = 15000#len(t.word_index) + 1
 
-def prediction(model , inp_que , inp = '' , totlen=Ylen):
-
-  que = pad_sequences(t.texts_to_sequences([inp_que]) , maxlen = Xlen , padding='pre' , truncating = 'pre')
-  if inp == '':
-    text = 'startseq'
-  else:
-    text = 'startseq ' + inp
-  for i in range(totlen):
-    ans = pad_sequences(t.texts_to_sequences([text]) , maxlen = Ylen , padding='pre' , truncating = 'pre')
-    y_pred = t.sequences_to_texts([[np.argmax(model.predict([que.reshape(1,Xlen) , ans.reshape(1,Ylen)]))]])[0]
-
-    text += ' ' + y_pred
-
-    if y_pred == 'endseq':
-      break
-
-  return text
-
 re_print = re.compile('[^%s]' % re.escape(string.printable))
 table = str.maketrans('' , '' , string.punctuation)
 
@@ -114,9 +96,29 @@ def index(process):
     print('Hello Guys')
     process = clean([process])
     print(process)
-    a = prediction(model , process[0])
-    print(a)
-    return a
+    
+    inp_que = process[0]
+    inp = ''
+    totlen=Ylen
+    
+    que = pad_sequences(t.texts_to_sequences([inp_que]) , maxlen = Xlen , padding='pre' , truncating = 'pre')
+    if inp == '':
+        text = 'startseq'
+    else:
+        text = 'startseq ' + inp
+    for i in range(totlen):
+        ans = pad_sequences(t.texts_to_sequences([text]) , maxlen = Ylen , padding='pre' , truncating = 'pre')
+        y_pred = t.sequences_to_texts([[np.argmax(model.predict([que.reshape(1,Xlen) , ans.reshape(1,Ylen)]))]])[0]
+
+        text += ' ' + y_pred
+
+        if y_pred == 'endseq':
+            break
+        
+        
+    print(text)
+    
+    return text
     keras.backend.clear_session()
 
 if __name__ == "__main__":
