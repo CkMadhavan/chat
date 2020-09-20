@@ -114,7 +114,7 @@ def index(process):
     print('Hello Guys')
     process = clean([process])
     print(process)
-    a = prediction(model , process[0])[9:-7]
+    a = prediction(model , process[0])
     print(a)
     return a
     keras.backend.clear_session()
