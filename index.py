@@ -29,7 +29,7 @@ units = 100
 
 inp1 = keras.layers.Input(shape=(Xlen , ))
 enc1 = keras.layers.Embedding(Xvocab , 100 ,input_length = Xlen)(inp1)
-enc1 = keras.layers.CuDNNLSTM(units , return_sequences = True)(enc1)
+enc1 = keras.layers.LSTM(units , return_sequences = True)(enc1)
 enc1 = keras.layers.Dropout(0.5)(enc1)
 enc1 = keras.layers.BatchNormalization()(enc1)
 
@@ -44,7 +44,7 @@ sent_representation1 = keras.layers.Lambda(lambda xin: keras.backend.sum(xin, ax
 
 inp2 = keras.layers.Input(shape=(Ylen, ))
 enc2 = keras.layers.Embedding(Yvocab , 100, input_length = Ylen)(inp2)
-enc2 = keras.layers.CuDNNLSTM(units , return_sequences = True)(enc2)
+enc2 = keras.layers.LSTM(units , return_sequences = True)(enc2)
 enc2 = keras.layers.Dropout(0.5)(enc2)
 enc2 = keras.layers.BatchNormalization()(enc2)
 
