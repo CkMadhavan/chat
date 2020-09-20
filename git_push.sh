@@ -1,5 +1,5 @@
 #!/bin/sh
-read -p 'Commit Message: ' commitname
+commitname=$(zenity --entry --text="Commit Message:") 
 cd /Downloads/chatbot-master/
 git add .
 git commit -m $commitname
