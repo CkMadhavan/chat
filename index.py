@@ -13,6 +13,13 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+t = pickle.load(open('t' , "rb"))
+
+Xlen = 30#max([len(i) for i in q])
+Ylen = 30#max([len(i) for i in a])
+
+Xvocab = 15000#len(t.word_index) + 1
+Yvocab = 15000#len(t.word_index) + 1
 
 def prediction(model , inp_que , inp = '' , totlen=Ylen):
 
@@ -59,14 +66,6 @@ def clean(docs , l=True):
 def index(process):
     
     keras.backend.clear_session()
-        
-    t = pickle.load(open('t' , "rb"))
-
-    Xlen = 30#max([len(i) for i in q])
-    Ylen = 30#max([len(i) for i in a])
-
-    Xvocab = 15000#len(t.word_index) + 1
-    Yvocab = 15000#len(t.word_index) + 1
 
     #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
@@ -112,7 +111,7 @@ def index(process):
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
     
-    print('Hi ALL')
+    print('Hello Guys')
     process = clean([process])
     print(process)
     a = prediction(model , process[0])[9:-7]
