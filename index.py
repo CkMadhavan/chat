@@ -64,7 +64,7 @@ model = keras.models.Model(inputs = [inp1,inp2] , outputs = out)
 
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy')
 model.load_weights('di.hdf5')
-cdfgdfgfdg
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
 def prediction(model , inp_que , inp = '' , totlen=Ylen):
