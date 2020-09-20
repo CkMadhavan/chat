@@ -111,9 +111,11 @@ def clean(docs , l=True):
 @cross_origin()
 def index(process):
     
+    keras.backend.clear_session()
     process = clean([process])
     print(process)
     return prediction(model , process[0])[9:-7]
+    keras.backend.clear_session()
 
 if __name__ == "__main__":
     app.run()
