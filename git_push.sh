@@ -1,5 +1,5 @@
 #!/bin/sh
-read 'Enter Name' name
+read name
 cd /Downloads/chatbot-master/
 git add .
 git commit -m name
