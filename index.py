@@ -7,7 +7,7 @@ import pickle
 import string
 import re
 from flask import Flask
-#IDK WHATS WRONG
+#hello
 from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 cors = CORS(app)
