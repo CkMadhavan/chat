@@ -1,7 +1,6 @@
 #!/bin/sh
-echo 'Enter Commit Name : '
-read name
+read -p 'Enter Commit Name : ' name
 git add .
 git commit -m $name
-git push -f heroku master
-git push -f -u origin master 
+git push heroku master
+git push -u origin master 
