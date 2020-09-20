@@ -110,10 +110,12 @@ def clean(docs , l=True):
 @app.route('/<process>')
 @cross_origin()
 def index(process):
-    
+    print('Hi ALL')
     process = clean([process])
     print(process)
-    return prediction(model , process[0])[9:-7]
+    a = prediction(model , process[0])[9:-7]
+    print(a)
+    return a
     keras.backend.clear_session()
 
 if __name__ == "__main__":
