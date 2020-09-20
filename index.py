@@ -111,7 +111,7 @@ def clean(docs , l=True):
 @cross_origin()
 def index(process):
     
-    process = clean(process)
+    process = clean([process])
     return prediction(model , process[0])[9:-7]
 
 if __name__ == "__main__":
