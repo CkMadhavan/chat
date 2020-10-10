@@ -112,6 +112,7 @@ def clean(docs , l=True):
 def index(process):
     
     keras.backend.clear_session()
+    process = process.replace('_' , ' ')
     process = clean([process])
     print(process)
     return prediction(model , process[0])[9:-7]
